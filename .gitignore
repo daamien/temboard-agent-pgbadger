@@ -1,3 +1,5 @@
+# Tests
+_api_responses
 # Python
 *.pyc
 .pytest_cache/
