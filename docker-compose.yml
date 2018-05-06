@@ -54,6 +54,5 @@ services:
       - .:/usr/local/src/temboard-agent/
     links:
       - instance:instance.fqdn
-#    command: tail -f /dev/null
     labels:
       com.dnsdock.alias: agent.temboard.docker
