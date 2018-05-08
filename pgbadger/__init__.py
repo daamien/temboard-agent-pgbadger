@@ -30,8 +30,15 @@ routes = RouteSet()
 
 @routes.get(b'/pgbadger/v0/version')
 def get_pgbadger_version(http_context, app):
-    return pgbadger.check_version()
+    try:
+        return json.dumps(pgbadger.check_version())
+    except UserError as e:
+        return json.dumps(error())
 
+def error():
+    response={}
+    response['error']='error'
+    return response
 
 #
 # load/unload plugin  
@@ -42,17 +49,17 @@ class pgbadgerplugin(object):
         self.app = app
 
     def load(self):
-	logger.info('Starting the pgBagder plugin')
+        logger.info('Starting the pgBagder plugin')
 	
-	try:
-	    version=pgbadger.check_version()
+        try:
+            version=pgbadger.check_version()
             logger.info('Found pgBadger version : %s' %version )
-	except:
+        except:
             # if pgBadger is not present, the plugin is useless
-	    logger.warning('Cannot find pgBadger on the server. The pgBadger plugin will not work properly.')
-	    logger.info('Check that pgBadger is installed on the server.')
+            logger.warning('Cannot find pgBadger on the server. The pgBadger plugin will not work properly.')
+            logger.info('Check that pgBadger is installed on the server.')
 	
-	# create API routes
+        # create API routes
         logger.info('Adding pgBadger routes')
         self.app.router.add(routes)
 
