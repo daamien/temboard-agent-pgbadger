@@ -1,12 +1,24 @@
 
+
+
 install:
   stage: build
   image: dalibo/temboard-agent
   script:
   - bash share/docker/init_temboardagent_with_pgbadger.sh
+  when: manual      
 
 api_test:
   stage: test
   image: dalibo/temboard-agent
   script:
-  - make api_pgbadger_version    
+  - make api_pgbadger_version
+  when: manual    
+
+unit-2.7:
+  stage: test
+  image: python:2.7
+  script:
+  - pip install pytest
+  - pip install git+https://github.com/dalibo/temboard-agent.git
+  - python -m pytest tests/unit/
