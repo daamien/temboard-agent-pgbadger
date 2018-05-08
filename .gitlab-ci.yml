@@ -19,6 +19,5 @@ unit-2.7:
   stage: test
   image: python:2.7
   script:
-  - pip install pytest
-  - pip install git+https://github.com/dalibo/temboard-agent.git
+  - pip install -r requirements.txt 
   - python -m pytest tests/unit/

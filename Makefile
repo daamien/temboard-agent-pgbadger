@@ -42,3 +42,12 @@ $(TOKEN_FILE):
 	-mkdir $(DEST)
 	$(WGET) --post-data '$(JSON_AUTH)' $(API_LOGIN) -O $(TOKEN_FILE)
 	TOKEN=$(shell cat $(TOKEN_FILE) | jq --raw-output .session)
+
+
+
+#
+# Unit test
+# 
+
+pytest:
+	python -m pytest tests/unit/
