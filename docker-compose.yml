@@ -3,6 +3,7 @@ version: '2'
 volumes:
   data:
   run:
+  logs:      
 
 services:
   repository:
@@ -31,6 +32,7 @@ services:
     volumes:
       - data:/var/lib/postgresql/data
       - run:/var/run/postgresql
+      - logs:/var/log/postgresql  
     labels:
       com.dnsdock.alias: instance.temboard.docker
 
@@ -49,6 +51,7 @@ services:
     volumes:
       - data:/var/lib/postgresql/data 
       - run:/var/run/postgresql/:ro
+      - logs:/var/run/postgresql/:ro  
       - /usr/bin/docker:/usr/bin/docker:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - .:/usr/local/src/temboard-agent/
