@@ -28,3 +28,32 @@ def test_check_version():
     with pytest.raises(UserError):
         assert(pgbadger.check_version())
 
+def test_create_report():
+
+    # should not work on a test environment
+    with pytest.raises(UserError):
+        assert(pgbadger.create_report())	
+
+    assert(pgbadger.create_report(
+                path='src/pgBadger/',
+                reports_dir='_tmp/reports',
+                log_dir='_tmp/log')
+    )
+
+def test_list_reports():
+
+    # should not work on a test environment
+    with pytest.raises(UserError):
+        assert(pgbadger.list_reports())
+
+    assert(pgbadger.list_reports(reports_dir='_tmp/reports'))
+
+
+
+def test_parse_version():
+
+    test1="pgBadger Version 3.4\n"
+    assert(pgbadger.parse_version(test1))
+
+    v=pgbadger.parse_version(test1)
+    assert(v['int_version'] == 3004)

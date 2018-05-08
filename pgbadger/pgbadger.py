@@ -1,6 +1,9 @@
 
 import os
 import json
+import time
+from datetime import datetime,date
+
 
 from temboardagent.errors import UserError
 from temboardagent.command import exec_command
@@ -9,23 +12,47 @@ from temboardagent.command import exec_command
 # Constants
 #
 
+PGBADGER_MIN_VERSION = 6000 # version below 6.0 are not supported
+PGBADGER_REPORTS_DIRECTORY = '/var/lib/pgbadger'
+POSTGRESQL_LOG_DIRECTORY = '/var/log/postgresql/'
 
-MIN_PGBADGER_VERSION = 6000 # version below 6.0 are not supported
+# Python datetime is not Serializable
+# we need this handler to convert dates in JSON format
+date_handler = lambda obj: (
+    obj.isoformat()
+    if isinstance(obj, (datetime, date))
+    else None
+)
 
 #
-# API entrpoints
+# API entrypoints
 #
+
 def get_version():
+    response={}
     try:
-        response=check_pgbadger_version()
+        response=check_version()
     except UserError as ue:
         response={}
         response['error']=ue
-    return json.dumps(response)
+    return json.dumps(response, default=date_handler)
+
+def get_reports():
+    response=list_reports()
+    return json.dumps(response, default=date_handler)
+
+def get_reports(timestamp=None):
+    response={}
+    return json.dumps(response,  default=date_handler)
+
+def post_reports_new(output_format='json'):
+    response={}
+    return json.dumps(response,  default=date_handler)
 
 #
-#
+# utils
 # 
+
 def check_version(path=None):
     """
     check if the pgBadger version is correct, 
@@ -36,7 +63,12 @@ def check_version(path=None):
     """
     pgbadger_bin=os.path.join( path or '' , 'pgbadger' )
     command=['perl', pgbadger_bin, '--version']
-    (return_code, stdout, stderr) = exec_command(command)
+    
+    try:
+        (return_code, stdout, stderr) = exec_command(command)
+    except:
+        msg = "An unknown error occured with pgBadger."
+        raise UserError(msg)
 
     if return_code!=0:
         msg = "Seems like pgBadger is not installed : %s" %stderr
@@ -44,16 +76,80 @@ def check_version(path=None):
 
     version=parse_version(stdout)
 
-    if version['int_version'] < MIN_PGBADGER_VERSION:
+    if version['int_version'] < PGBADGER_MIN_VERSION:
         msg = "This version of pgBadger is too old : %s" %version['full_version']
         raise UserError(msg)
 
     return version
 
+def create_report(path=None,reports_dir=None,log_dir=None):
+    """
+    TODO
+    """
+    now=datetime.now()
+    metadata={}
+    metadata['created_at']=now
+    metadata['timestamp']=int(time.mktime(now.timetuple()))
+
+    pgbadger_bin=os.path.join( path or '' , 'pgbadger' )
+
+    output_dir= reports_dir or PGBADGER_REPORTS_DIRECTORY
+    output_filename=str(metadata['timestamp'])+'_pgbadger_report_'+metadata['created_at'].strftime('%d%b%Y')+'.json' 
+    output_args=['--outfile', os.path.join(output_dir,output_filename)]
+
+    input_dir = log_dir	or POSTGRESQL_LOG_DIRECTORY
+    input_filename='postgresql.log'
+    input_args=[os.path.join(input_dir,input_filename)]
+    	
+    command=['perl', pgbadger_bin] + output_args + input_args
+
+    try:
+        (return_code, stdout, stderr) = exec_command(command)
+    except:
+        msg = "An unknown error occured with pgBadger."
+        raise UserError(msg)
+
+    if return_code!=0:
+        print command
+        print stderr
+        msg = "pgBadger failed."
+        raise UserError(msg)
+
+    return metadata	
+
+def list_reports(reports_dir=None):
+    """
+    TODO
+    """
+    result={}
+    target = reports_dir or PGBADGER_REPORTS_DIRECTORY
+    
+    try:
+        all_files_in_reports_dir=os.listdir(target)
+    except:
+        msg = "Error while reading the reports directory."
+        raise UserError(msg)
+
+    for f in all_files_in_reports_dir:
+        if f.endswith(".json"):
+            # filename format is supposed to be like that: 
+            # 1525794324_pgbadger_report_05may2018.json
+            timestamp=int(f.split('_')[0])
+            metadata={}
+            metadata['timestamp']=timestamp
+            metadata['created_at']=datetime.fromtimestamp(timestamp)
+            metadata['url_json']='/pgbadger/v0/reports/%d/json' % timestamp
+            metadata['url_html']='/pgbadger/v0/reports/%d/html' % timestamp
+            result[timestamp]=metadata
+
+    return result
 
 def parse_version(version):
     """
-    Extract version from string
+    Extract pgBadger version from string
+    
+    :param version: a full version string, usually provided by `pgbadger --version`
+    :return: the version number in different formats
     """
     result={}
     # example with version = "pgBadger Version 3.4\n"
