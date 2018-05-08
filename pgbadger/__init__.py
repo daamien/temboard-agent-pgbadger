@@ -9,23 +9,34 @@ from temboardagent.routing import RouteSet
 
 from . import pgbadger
 
+
+logger = logging.getLogger(__name__)
+
 #
-# API Entrypoints
+# API Version 0
+# This API is a Work In Process and highly unstable !
 #
 
 routes = RouteSet()
 
-@routes.get(b'/pgbadger/version')
+# TODO
+# GET  /pgbadger/v0/reports  : list all reports
+# GET  /pgbadger/v0/reports/last  : get last report (in json)
+# GET  /pgbadger/v0/reports/last/{html,json}  : get last report (in specified format)
+# GET  /pgbadger/v0/reports/<timestamp>  : get report by date (in json)
+# GET  /pgbadger/v0/reports/<timestamp>/{html,json}  : get report by date (in specified format)
+# POST /pgbadger/v0/reports/new  : create a report
+# DEL  /pgbadger/v0/reports/<timestamp> : remove a report by date 
+
+@routes.get(b'/pgbadger/v0/version')
 def get_pgbadger_version(http_context, app):
     return pgbadger.check_pgbadger_version()
-
-logger = logging.getLogger(__name__) 
 
 
 #
 # load/unload plugin  
 #
-class pgbadgerPlugin(object):
+class pgbadgerplugin(object):
 
     def __init__(self, app, **kw):
         self.app = app
