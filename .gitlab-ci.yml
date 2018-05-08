@@ -41,7 +41,12 @@ unit-latest:
   stage: test
   image: python:latest
   script:
-  - apt-get update & apt-get install -y libjson-xs-perl
+  # fetch pgBadger from the PGDG repo
+  - sh -c 'echo "deb http://apt.postgresql.org/pub/repos/apt/ $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+  - apt-get update && apt-get install -y lsb-release wget ca-certificates
+  - wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+  - apt-get update && apt-get install pgbadger -y --install-suggests
+  #- apt-get update & apt-get install -y libjson-xs-perl
   - pip install -r requirements.txt
   - python -m pytest tests/unit/
 
