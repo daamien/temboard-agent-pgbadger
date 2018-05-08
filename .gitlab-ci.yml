@@ -20,6 +20,11 @@ unit-latest:
   image: python:latest
   script:
   - pip install -r requirements.txt
+  # Install various versions of pgBadger
+  - apt-get update && apt-get install -y git perl
+  - git clone --branch 'master' https://github.com/dalibo/pgbadger.git src/pgBadger
+  - git clone --branch 'v3.3' https://github.com/dalibo/pgbadger.git src/pgBadger-3.3
+  - git clone --branch 'v9.0' https://github.com/dalibo/pgbadger.git src/pgBadger-9.0
   - python -m pytest tests/unit/
 
 unit-2.7:
@@ -27,4 +32,10 @@ unit-2.7:
   image: python:2.7
   script:
   - pip install -r requirements.txt 
+  # Install various versions of pgBadger
+  - apt-get update && apt-get install -y git perl
+  - git clone --branch 'master' https://github.com/dalibo/pgbadger.git src/pgBadger
+  - git clone --branch 'v3.3' https://github.com/dalibo/pgbadger.git src/pgBadger-3.3
+  - git clone --branch 'v9.0' https://github.com/dalibo/pgbadger.git src/pgBadger-9.0
+  # 
   - python -m pytest tests/unit/

@@ -30,7 +30,7 @@ routes = RouteSet()
 
 @routes.get(b'/pgbadger/v0/version')
 def get_pgbadger_version(http_context, app):
-    return pgbadger.check_pgbadger_version()
+    return pgbadger.check_version()
 
 
 #
@@ -45,7 +45,7 @@ class pgbadgerplugin(object):
 	logger.info('Starting the pgBagder plugin')
 	
 	try:
-	    version=pgbadger.check_pgbadger_version()
+	    version=pgbadger.check_version()
             logger.info('Found pgBadger version : %s' %version )
 	except:
             # if pgBadger is not present, the plugin is useless
