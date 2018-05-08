@@ -1,5 +1,6 @@
 # Tests
 _api_responses
+src/
 # Python
 *.pyc
 .pytest_cache/
