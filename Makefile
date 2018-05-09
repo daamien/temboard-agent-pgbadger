@@ -58,7 +58,7 @@ src/pgBadger-3.3:
 	git clone --branch 'v3.3' https://github.com/dalibo/pgbadger.git src/pgBadger-3.3
 
 src/pgBadger-9.0:
-	git clone --branch 'v3.3' https://github.com/dalibo/pgbadger.git src/pgBadger-9.0
+	git clone --branch 'v9.0' https://github.com/dalibo/pgbadger.git src/pgBadger-9.0
 
 _tmp/reports:
 	mkdir -p _tmp/pgbadger
