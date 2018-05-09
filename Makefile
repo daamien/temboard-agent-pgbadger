@@ -69,3 +69,7 @@ _tmp/log/postgresql.log:
 
 pytest: pytest_prepare
 	python -m pytest --cov=pgbadger tests/unit/
+
+local_ci:
+	gitlab-runner exec docker install_pgbadger
+	gitlab-runner exec docker unit-2.7
