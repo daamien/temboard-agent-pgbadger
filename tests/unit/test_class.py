@@ -28,13 +28,15 @@ def test_error():
 
 def test_class_init():
 
-    from temboardagent.cli import Application, bootstrap
-
+    from temboardagent.cli import Application
+    from temboardagent.routing import Router
     app = Application()
+    app.router = Router()
+ 
     p=pgbadger.pgbadgerplugin(app)
     
-    assert(p.load())
+    assert(p.load() is None)
 
-    assert(p.unload())
+    assert(p.unload() is None)
 
 
