@@ -61,11 +61,11 @@ src/pgBadger-9.0:
 	git clone --branch 'v9.0' https://github.com/dalibo/pgbadger.git src/pgBadger-9.0
 
 _tmp/reports:
-	mkdir -p _tmp/pgbadger
+	mkdir -p $@ 
 
 _tmp/log/postgresql.log:
 	mkdir -p _tmp/log
-	bunzip2 -d src/pgBadger/t/fixtures/light.postgres.log.bz2 -c > _tmp/log/postgresql.log
+	bunzip2 -d src/pgBadger/t/fixtures/light.postgres.log.bz2 -c > $@
 
 pytest: pytest_prepare
 	python -m pytest --cov=pgbadger tests/unit/
