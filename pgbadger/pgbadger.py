@@ -1,4 +1,5 @@
 
+import logging
 import os
 import json
 import time
@@ -23,6 +24,9 @@ date_handler = lambda obj: (
     if isinstance(obj, (datetime, date))
     else None
 )
+
+
+logger = logging.getLogger(__name__)
 
 #
 # API entrypoints
@@ -105,14 +109,14 @@ def create_report(path=None,reports_dir=None,log_dir=None):
 
     try:
         (return_code, stdout, stderr) = exec_command(command)
-    except:
+    except Exception as e:
         msg = "An unknown error occured with pgBadger."
+        logger.fatal(msg,e)
         raise UserError(msg)
 
     if return_code!=0:
-        print command
-        print stderr
-        msg = "pgBadger failed."
+        msg = "pgBadger failed"
+        logger.error("%s during command %s with error %s"% (msg,command,stderr))
         raise UserError(msg)
 
     return metadata	
