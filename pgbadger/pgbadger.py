@@ -28,30 +28,6 @@ date_handler = lambda obj: (
 
 logger = logging.getLogger(__name__)
 
-#
-# API entrypoints
-#
-
-def get_version():
-    response={}
-    try:
-        response=check_version()
-    except UserError as ue:
-        response={}
-        response['error']=ue
-    return json.dumps(response, default=date_handler)
-
-def get_reports():
-    response=list_reports()
-    return json.dumps(response, default=date_handler)
-
-def get_reports(timestamp=None):
-    response={}
-    return json.dumps(response,  default=date_handler)
-
-def post_reports_new(output_format='json'):
-    response={}
-    return json.dumps(response,  default=date_handler)
 
 #
 # utils

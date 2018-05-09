@@ -25,15 +25,32 @@ routes = RouteSet()
 # GET  /pgbadger/v0/reports/last/{html,json}  : get last report (in specified format)
 # GET  /pgbadger/v0/reports/<timestamp>  : get report by date (in json)
 # GET  /pgbadger/v0/reports/<timestamp>/{html,json}  : get report by date (in specified format)
-# POST /pgbadger/v0/reports/new  : create a report
 # DEL  /pgbadger/v0/reports/<timestamp> : remove a report by date 
 
+# GET  /pgbadger/v0/reports  : list all reports
+@routes.get(b'/pgbadger/v0/reports')
+def get_pgbadger_reports(http_context, app):
+    try:
+        return json.dumps(pgbadger.list_reports())
+    except UserError as e:
+        return json.dumps(error())
+
+# POST /pgbadger/v0/reports/new  : create a report
+@routes.post(b'/pgbadger/v0/reports/new')
+def get_pgbadger_reports(http_context, app):
+    try:
+        return json.dumps(pgbadger.create_report())
+    except UserError as e:
+        return json.dumps(error())
+
+# GET /pgbadger/v0/version' : show local pgBadger version
 @routes.get(b'/pgbadger/v0/version')
 def get_pgbadger_version(http_context, app):
     try:
         return json.dumps(pgbadger.check_version())
     except UserError as e:
         return json.dumps(error())
+
 
 def error():
     response={}
