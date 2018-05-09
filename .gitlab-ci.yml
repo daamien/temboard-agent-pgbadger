@@ -47,13 +47,13 @@ unit-latest:
   - wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | apt-key add -
   - apt-get update && apt-get install pgbadger -y --install-suggests
   #- apt-get update & apt-get install -y libjson-xs-perl
-  - pip install -r requirements.txt
-  - python -m pytest tests/unit/
+  - pip install -r tests/unit/requirements.txt
+  - python -m pytest --cov=pgbadger tests/unit/
 
 unit-2.7:
   stage: test
-  image: python:2.7
+  image: python:2.7-stretch
   script:
   - apt-get update & apt-get install -y libjson-xs-perl
   - pip install -r requirements.txt 
-  - python -m pytest tests/unit/
+  - python -m pytest --cov=pgbadger tests/unit/

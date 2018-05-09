@@ -68,4 +68,4 @@ _tmp/log/postgresql.log:
 	bunzip2 -d src/pgBadger/t/fixtures/light.postgres.log.bz2 -c > _tmp/log/postgresql.log
 
 pytest: pytest_prepare
-	python -m pytest tests/unit/
+	python -m pytest --cov=pgbadger tests/unit/
