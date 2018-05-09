@@ -38,7 +38,7 @@ def get_pgbadger_reports(http_context, app):
 
 # POST /pgbadger/v0/reports/new  : create a report
 @routes.post(b'/pgbadger/v0/reports/new')
-def get_pgbadger_reports(http_context, app):
+def post_pgbadger_reports_new(http_context, app):
     try:
         return json.dumps(pgbadger.create_report())
     except UserError as e:

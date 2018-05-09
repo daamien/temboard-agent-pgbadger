@@ -11,10 +11,10 @@ def test_get_pgbadger_reports():
     assert(pgbadger.get_pgbadger_reports(None,None))
 
 
-def test_get_pgbadger_reports():
+def test_post_pgbadger_reports_new():
 
     # empty call
-    assert(pgbadger.get_pgbadger_reports(None,None))
+    assert(pgbadger.post_pgbadger_reports_new(None,None))
 
 
 def test_get_pgbadger_version():
