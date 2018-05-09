@@ -49,3 +49,7 @@ unit-2.7:
   - apt-get update && apt-get install -y libjson-xs-perl
   - pip install -r tests/unit/requirements.txt 
   - make pytest
+  artifacts:
+    paths:
+    - _cov_html/
+    expire_in: 1 hour

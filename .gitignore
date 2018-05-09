@@ -2,6 +2,7 @@
 _api_responses
 src/
 _tmp/
+_cov_html
 # Python
 *.pyc
 .pytest_cache/
