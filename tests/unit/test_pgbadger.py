@@ -40,6 +40,15 @@ def test_create_report():
                 log_dir='_tmp/log')
     )
 
+
+    # let's try some basic shell injection
+    with pytest.raises(UserError):
+        assert(pgbadger.create_report(
+                path='src/pgBadger',
+                reports_dir='_tmp/reports; echo "injection "',
+                log_dir='_tmp/log')
+        )
+
 def test_list_reports():
 
     # should not work on a test environment
@@ -47,7 +56,6 @@ def test_list_reports():
         assert(pgbadger.list_reports())
 
     assert(pgbadger.list_reports(reports_dir='_tmp/reports'))
-
 
 
 def test_parse_version():

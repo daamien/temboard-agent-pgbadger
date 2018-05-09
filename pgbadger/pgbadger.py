@@ -44,11 +44,7 @@ def check_version(path=None):
     pgbadger_bin=os.path.join( path or '' , 'pgbadger' )
     command=['perl', pgbadger_bin, '--version']
     
-    try:
-        (return_code, stdout, stderr) = exec_command(command)
-    except:
-        msg = "An unknown error occured with pgBadger."
-        raise UserError(msg)
+    (return_code, stdout, stderr) = exec_command(command)
 
     if return_code!=0:
         msg = "Seems like pgBadger is not installed : %s" %stderr
@@ -83,12 +79,7 @@ def create_report(path=None,reports_dir=None,log_dir=None):
     	
     command=['perl', pgbadger_bin] + output_args + input_args
 
-    try:
-        (return_code, stdout, stderr) = exec_command(command)
-    except Exception as e:
-        msg = "An unknown error occured with pgBadger."
-        logger.fatal(msg,e)
-        raise UserError(msg)
+    (return_code, stdout, stderr) = exec_command(command)
 
     if return_code!=0:
         msg = "pgBadger failed"
