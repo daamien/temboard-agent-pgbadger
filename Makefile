@@ -68,7 +68,7 @@ _tmp/log/postgresql.log:
 	bunzip2 -d src/pgBadger/t/fixtures/light.postgres.log.bz2 -c > $@
 
 pytest: pytest_prepare
-	python -m pytest --cov=pgbadger tests/unit/  --cov-report html:_cov_html                                           
+	python -m pytest --cov=pgbadger tests/unit/ --cov-report term --cov-report html:_cov_html                                           
 
 local_ci:
 	gitlab-runner exec docker install_pgbadger
