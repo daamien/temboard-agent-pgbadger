@@ -63,8 +63,18 @@ def error():
 #
 class pgbadgerplugin(object):
 
+    s = 'pgbadger'
+    option_specs = [
+        OptionSpec(s, 'pgbadger_path', default='None', validator=quoted),
+        OptionSpec(s, 'log_directory', default='/var/log/postgresql', validator=quoted),
+        OptionSpec(s, 'reports_directory', default='/var/lib/pgbadger', validator=quoted),
+    ]
+    del s
+
+
     def __init__(self, app, **kw):
         self.app = app
+        self.app.config.add_specs(self.option_specs)
 
     def load(self):
         logger.info('Starting the pgBagder plugin')
