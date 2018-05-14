@@ -99,7 +99,7 @@ def fetch_last_report(config):
     # copy metadata
     return insert_json(config,reports[last])
 
-def insert_json(config,report)
+def insert_json(config,report):
     # Add the JSON content
     try:
 	f= open(json_report_filepath(config,report['timestamp']),'r')
@@ -109,7 +109,7 @@ def insert_json(config,report)
 	logger.error("Can't open file : %s" % (msg,command,stderr))
         raise UserError(msg)
 
-    return reports[last]	
+    return report	
 
 def fetch_report(config, timestamp):
     """
