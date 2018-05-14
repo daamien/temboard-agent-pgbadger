@@ -2,7 +2,20 @@
 from temboardagent.errors import UserError
 from pgbadger import pgbadger
 
+import json
 import pytest
+
+empty_config={}
+
+injection_config={}
+injection_config['reports_directory']='_tmp/reports; echo "injection"'
+injection_config['log_directory']='_tmp/log; echo "injection"'
+injection_config['pgbadger_path']='; echo "injection"' 
+
+test_config={}
+test_config['reports_directory']='_tmp/reports'
+test_config['log_directory']='_tmp/log'
+test_config['pgbadger_path']='src/pgBadger/'
 
 def test_parse_version():
     
@@ -14,48 +27,61 @@ def test_parse_version():
 
 def test_check_version():
     
+    version_config={}
+
     # latest
-    assert(pgbadger.check_version('src/pgBadger/'))
+    version_config['pgbadger_path']='src/pgBadger/'
+    assert(pgbadger.check_version(version_config))
     
     # old but ok
-    assert(pgbadger.check_version('src/pgBadger-9.0/'))
+    version_config['pgbadger_path']='src/pgBadger-9.0/'
+    assert(pgbadger.check_version(version_config))
 
     # too old
+    version_config['pgbadger_path']='src/pgBadger-3.3/'
     with pytest.raises(UserError):
-        assert(pgbadger.check_version('src/pgBadger-3.3/'))
+        assert(pgbadger.check_version(version_config))
 
     # not installed 
     with pytest.raises(UserError):
-        assert(pgbadger.check_version())
+        assert(pgbadger.check_version(empty_config))
 
 def test_create_report():
 
     # should not work on a test environment
     with pytest.raises(UserError):
-        assert(pgbadger.create_report())	
+        assert(pgbadger.create_report(empty_config))	
 
-    assert(pgbadger.create_report(
-                path='src/pgBadger/',
-                reports_dir='_tmp/reports',
-                log_dir='_tmp/log')
-    )
-
+    assert(pgbadger.create_report(test_config))
 
     # let's try some basic shell injection
     with pytest.raises(UserError):
-        assert(pgbadger.create_report(
-                path='src/pgBadger',
-                reports_dir='_tmp/reports; echo "injection "',
-                log_dir='_tmp/log')
-        )
+        assert(pgbadger.create_report(injection_config))
+
+
+def test_fetch_last_report():
+
+    # should not work
+    with pytest.raises(UserError):
+        assert(pgbadger.fetch_last_report({}))
+
+    config={}
+    config['reports_directory']='_tmp/reports'
+    
+    report=pgbadger.fetch_last_report(config)
+    report_json=json.loads(report["json"])
+    assert('user_info' in report_json)
+    #print(report)
 
 def test_list_reports():
 
     # should not work on a test environment
     with pytest.raises(UserError):
-        assert(pgbadger.list_reports())
+        assert(pgbadger.list_reports({}))
 
-    assert(pgbadger.list_reports(reports_dir='_tmp/reports'))
+    config={}
+    config['reports_directory']='_tmp/reports'
+    assert(pgbadger.list_reports(config))
 
 
 def test_parse_version():

@@ -11,6 +11,7 @@ API_LOGIN=$(API_URL)/login
 API_PROFILE=$(API_URL)/profile
 API_DISCOVER=$(API_URL)/discover
 API_PGBADGER_VERSION=$(API_URL)/pgbadger/version
+API_PGBADGER_LAST_REPORT=$(API_URL)/pgbadger/reports/last
 
 TOKEN_FILE=$(DEST)/token.json
 JSON_AUTH={"username": "alice","password": "alice"}
@@ -34,6 +35,10 @@ $(DEST)/profile.son: $(TOKEN_FILE)
 
 $(DEST)/pgbadger_version.json: $(TOKEN_FILE)
 	$(WGET_TOKEN) $(API_PGBADGER_VERSION)
+	cat $@
+
+$(DEST)/pgbadger_last_report.json: $(TOKEN_FILE)
+	$(WGET_TOKEN) $(API_PGBADGER_LAST_REPORT)
 	cat $@
 	
 api_login: $(TOKEN_FILE)
@@ -69,6 +74,9 @@ _tmp/log/postgresql.log:
 
 pytest: pytest_prepare
 	python -m pytest --cov=pgbadger tests/unit/ --cov-report term --cov-report html:_cov_html                                           
+
+pytest_verbose:
+	python -m pytest -v --capture=no --cov=pgbadger tests/unit/ --cov-report term --cov-report html:_cov_html
 
 local_ci:
 	gitlab-runner exec docker install_pgbadger

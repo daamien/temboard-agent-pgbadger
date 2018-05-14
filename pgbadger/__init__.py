@@ -7,48 +7,60 @@ import json
 
 from temboardagent.errors import UserError
 from temboardagent.routing import RouteSet
+from temboardagent.scheduler import taskmanager
+from temboardagent.configuration import OptionSpec
+from temboardagent.validators import dir_
 
 from . import pgbadger
 
 
 logger = logging.getLogger(__name__)
 
+workers = taskmanager.WorkerSet()
+
 #
 # API Version 0
 # This API is a Work In Process and highly unstable !
 #
 
-routes = RouteSet()
+routes_v0 = RouteSet()
 
 # TODO
 # GET  /pgbadger/v0/reports  : list all reports
-# GET  /pgbadger/v0/reports/last  : get last report (in json)
-# GET  /pgbadger/v0/reports/last/{html,json}  : get last report (in specified format)
 # GET  /pgbadger/v0/reports/<timestamp>  : get report by date (in json)
+# GET  /pgbadger/v0/reports/last/{html,json}  : get last report (in specified format)
 # GET  /pgbadger/v0/reports/<timestamp>/{html,json}  : get report by date (in specified format)
 # DEL  /pgbadger/v0/reports/<timestamp> : remove a report by date 
 
 # GET  /pgbadger/v0/reports  : list all reports
-@routes.get(b'/pgbadger/v0/reports')
+@routes_v0.get(b'/pgbadger/v0/reports')
 def get_pgbadger_reports(http_context, app):
     try:
-        return json.dumps(pgbadger.list_reports())
+        return json.dumps(pgbadger.list_reports(app.config))
+    except UserError as e:
+        return json.dumps(error())
+
+# GET  /pgbadger/v0/reports/last  : get last report (in json)
+@routes_v0.get(b'/pgbadger/v0/reports/last')
+def get_pgbadger_reports(http_context, app):
+    try:
+        return json.dumps(pgbadger.fetch_last_report(app.config))
     except UserError as e:
         return json.dumps(error())
 
 # POST /pgbadger/v0/reports/new  : create a report
-@routes.post(b'/pgbadger/v0/reports/new')
+@routes_v0.post(b'/pgbadger/v0/reports/new')
 def post_pgbadger_reports_new(http_context, app):
     try:
-        return json.dumps(pgbadger.create_report())
+        return json.dumps(pgbadger.create_report(app.config))
     except UserError as e:
         return json.dumps(error())
 
 # GET /pgbadger/v0/version' : show local pgBadger version
-@routes.get(b'/pgbadger/v0/version')
+@routes_v0.get(b'/pgbadger/v0/version')
 def get_pgbadger_version(http_context, app):
     try:
-        return json.dumps(pgbadger.check_version())
+        return json.dumps(pgbadger.check_version(app.config))
     except UserError as e:
         return json.dumps(error())
 
@@ -58,6 +70,11 @@ def error():
     response['error']='error'
     return response
 
+
+@workers.register(pool_size=1)
+def create_report(app):
+    return True
+
 #
 # load/unload plugin  
 #
@@ -65,9 +82,9 @@ class pgbadgerplugin(object):
 
     s = 'pgbadger'
     option_specs = [
-        OptionSpec(s, 'pgbadger_path', default='None', validator=quoted),
-        OptionSpec(s, 'log_directory', default='/var/log/postgresql', validator=quoted),
-        OptionSpec(s, 'reports_directory', default='/var/lib/pgbadger', validator=quoted),
+        OptionSpec(s, 'pgbadger_path', default=None, validator=dir_),
+        OptionSpec(s, 'log_directory', default='/var/log/postgresql', validator=dir_),
+        OptionSpec(s, 'reports_directory', default='/var/lib/pgbadger', validator=dir_),
     ]
     del s
 
@@ -75,6 +92,7 @@ class pgbadgerplugin(object):
     def __init__(self, app, **kw):
         self.app = app
         self.app.config.add_specs(self.option_specs)
+
 
     def load(self):
         logger.info('Starting the pgBagder plugin')
@@ -89,8 +107,15 @@ class pgbadgerplugin(object):
 	
         # create API routes
         logger.info('Adding pgBadger routes')
-        self.app.router.add(routes)
+        self.app.router.add(routes_v0)
+
+#        self.app.worker_pool.add(workers)
+#        self.app.scheduler.add(workers)
+
 
     def unload(self):
-        self.app.router.remove(routes)
-		
+#        self.app.scheduler.remove(workers)
+#        self.app.worker_pool.remove(workers)
+        self.app.router.remove(routes_v0)
+        self.app.config.remove_specs(self.option_specs)
+

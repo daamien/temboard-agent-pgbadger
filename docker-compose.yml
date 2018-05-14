@@ -13,6 +13,7 @@ services:
       POSTGRES_PASSWORD: temboard
     labels:
       com.dnsdock.alias: postgres.temboard.docker
+    command: echo "Temboard repository disabled."
 
   ui:
     image: dalibo/temboard:latest
@@ -26,6 +27,7 @@ services:
       - "8889:8888"
     labels:
       com.dnsdock.alias: www.temboard.docker
+    command: echo "Temboard UI disabled."
 
   instance:
     image: postgres:10-alpine
@@ -55,6 +57,7 @@ services:
       - /usr/bin/docker:/usr/bin/docker:ro
       - /var/run/docker.sock:/var/run/docker.sock
       - .:/usr/local/src/temboard-agent/
+      - ./share/docker/init_temboardagent_with_pgbadger.sh:/docker-entrypoint-initdb.d/init.sh
     links:
       - instance:instance.fqdn
     labels:

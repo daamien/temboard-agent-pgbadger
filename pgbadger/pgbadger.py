@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 # utils
 # 
 
-def check_version(path=None):
+def check_version(config):
     """
     check if the pgBadger version is correct, 
     throws an error is pgBadger is not present or too old
@@ -41,9 +41,8 @@ def check_version(path=None):
     :param path: directory containing the pgBadger binary (optional)
     :return: the version in different formats
     """
-    pgbadger_bin=os.path.join( path or '' , 'pgbadger' )
-    command=['perl', pgbadger_bin, '--version']
-    
+
+    command=['perl', pgbadger_bin(config), '--version']
     (return_code, stdout, stderr) = exec_command(command)
 
     if return_code!=0:
@@ -58,7 +57,7 @@ def check_version(path=None):
 
     return version
 
-def create_report(path=None,reports_dir=None,log_dir=None):
+def create_report(config):
     """
     TODO
     """
@@ -67,18 +66,20 @@ def create_report(path=None,reports_dir=None,log_dir=None):
     metadata['created_at']=now
     metadata['timestamp']=int(time.mktime(now.timetuple()))
 
-    pgbadger_bin=os.path.join( path or '' , 'pgbadger' )
+    # output file
+    output_args=['--outfile', json_report_filepath(config, metadata['timestamp'])]
 
-    output_dir= reports_dir or PGBADGER_REPORTS_DIRECTORY
-    output_filename=str(metadata['timestamp'])+'_pgbadger_report_'+metadata['created_at'].strftime('%d%b%Y')+'.json' 
-    output_args=['--outfile', os.path.join(output_dir,output_filename)]
-
-    input_dir = log_dir	or POSTGRESQL_LOG_DIRECTORY
+    # input file
+    try:
+    	input_dir = config['log_directory']	or POSTGRESQL_LOG_DIRECTORY
+    except:
+        msg='Internal Error.'
+        raise UserError(msg)
     input_filename='postgresql.log'
     input_args=[os.path.join(input_dir,input_filename)]
-    	
-    command=['perl', pgbadger_bin] + output_args + input_args
-
+    
+    # Launch	
+    command=['perl', pgbadger_bin(config)] + output_args + input_args
     (return_code, stdout, stderr) = exec_command(command)
 
     if return_code!=0:
@@ -88,12 +89,46 @@ def create_report(path=None,reports_dir=None,log_dir=None):
 
     return metadata	
 
-def list_reports(reports_dir=None):
+
+def fetch_last_report(config):
+    """
+    Return the last available report
+    """
+    reports=list_reports(config)
+    last=max(reports.keys())
+    # copy metadata
+    return insert_json(config,reports[last])
+
+def insert_json(config,report)
+    # Add the JSON content
+    try:
+	f= open(json_report_filepath(config,report['timestamp']),'r')
+	report['json']=f.read()
+    except:
+	msg = "Internal Error."
+	logger.error("Can't open file : %s" % (msg,command,stderr))
+        raise UserError(msg)
+
+    return reports[last]	
+
+def fetch_report(config, timestamp):
+    """
+    """
+    reports=list_reports(config)
+    return insert_json(config,reports[timestamp])
+
+
+def list_reports(config):
     """
     TODO
     """
     result={}
-    target = reports_dir or PGBADGER_REPORTS_DIRECTORY
+
+    if not 'reports_directory' in config:
+        msg = "Internal Error."
+        raise UserError(msg)
+
+    target = config['reports_directory'] or PGBADGER_REPORTS_DIRECTORY
     
     try:
         all_files_in_reports_dir=os.listdir(target)
@@ -114,6 +149,35 @@ def list_reports(reports_dir=None):
             result[timestamp]=metadata
 
     return result
+
+#
+# utils
+#
+
+
+def json_report_filepath(config,timestamp):
+    """
+    """	 
+    # filename format is supposed to be like that: 
+    # 1525794324_pgbadger_report_05may2018.json
+    created_at=datetime.fromtimestamp(timestamp).strftime('%d%b%Y')
+    report_filename=str(timestamp)+'_pgbadger_report_'+created_at+'.json'
+    return os.path.join(reports_directory(config),report_filename)
+
+def pgbadger_bin(config):
+    try:
+	return os.path.join( config['pgbadger_path'] or '' , 'pgbadger' )
+    except:
+        msg='Internal Error.'
+        raise UserError(msg)
+
+
+def reports_directory(config):
+    try:
+	return config['reports_directory'] or PGBADGER_REPORTS_DIRECTORY
+    except:
+	msg='Internal Error.'
+	raise UserError(msg)	
 
 def parse_version(version):
     """
