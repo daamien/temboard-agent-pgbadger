@@ -59,6 +59,49 @@ def test_create_report():
         assert(pgbadger.create_report(injection_config))
 
 
+def test_delete_report():
+
+    # Bad config + Bad Timestamp 
+    with pytest.raises(UserError):
+        assert(pgbadger.delete_report(empty_config,0))
+
+    # Good Config + Bad Timestamp
+    with pytest.raises(UserError):
+        assert(pgbadger.delete_report(test_config,0))
+
+    # Good Config + Good Timestamp
+    response=pgbadger.delete_report(test_config,1525806347)
+    assert(response['result']=='Report Removed Succesfully')
+
+
+def test_fetch_report():
+    # Bad config + Bad Timestamp 
+    with pytest.raises(UserError):
+        assert(pgbadger.fetch_report(empty_config,0))
+
+    # Good Config + Bad Timestamp
+    with pytest.raises(UserError):
+        assert(pgbadger.fetch_report(test_config,0))
+
+    # Good Config + Good Timestamp
+    response=pgbadger.fetch_report(test_config,1526304086)
+    assert(response['timestamp']==1526304086)
+    assert('user_info' in response['json'])
+
+
+def test_fetch_report_html():
+    # Bad config + Bad Timestamp 
+    with pytest.raises(UserError):
+        assert(pgbadger.fetch_report_html(empty_config,0))
+
+    # Good Config + Bad Timestamp
+    with pytest.raises(UserError):
+        assert(pgbadger.fetch_report_html(test_config,0))
+
+    # Good Config + Good Timestamp
+    response=pgbadger.fetch_report_html(test_config,1526304086)
+    assert('<html>' in response)
+
 def test_fetch_last_report():
 
     # should not work

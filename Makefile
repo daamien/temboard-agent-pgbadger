@@ -72,8 +72,11 @@ _tmp/log/postgresql.log:
 	mkdir -p _tmp/log
 	bunzip2 -d src/pgBadger/t/fixtures/light.postgres.log.bz2 -c > $@
 
-pytest: pytest_prepare
+pytest: pytest_prepare pytest_fixtures
 	python -m pytest --cov=pgbadger tests/unit/ --cov-report term --cov-report html:_cov_html                                           
+
+pytest_fixtures:
+	cp tests/fixtures/mock_reports/* _tmp/reports/
 
 pytest_verbose:
 	python -m pytest -v --capture=no --cov=pgbadger tests/unit/ --cov-report term --cov-report html:_cov_html

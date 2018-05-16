@@ -26,10 +26,9 @@ workers = taskmanager.WorkerSet()
 routes_v0 = RouteSet()
 
 # TODO
-# GET  /pgbadger/v0/reports  : list all reports
 # GET  /pgbadger/v0/reports/<timestamp>  : get report by date (in json)
-# GET  /pgbadger/v0/reports/last/{html,json}  : get last report (in specified format)
-# GET  /pgbadger/v0/reports/<timestamp>/{html,json}  : get report by date (in specified format)
+# GET  /pgbadger/v0/reports/last.html  : get last report (in specified format)
+# GET  /pgbadger/v0/reports/<int:timestamp>.html  : get report by date (in html)
 # DEL  /pgbadger/v0/reports/<timestamp> : remove a report by date 
 
 # GET  /pgbadger/v0/reports  : list all reports
@@ -42,7 +41,7 @@ def get_pgbadger_reports(http_context, app):
 
 # GET  /pgbadger/v0/reports/last  : get last report (in json)
 @routes_v0.get(b'/pgbadger/v0/reports/last')
-def get_pgbadger_reports(http_context, app):
+def get_pgbadger_report_last(http_context, app):
     try:
         return json.dumps(pgbadger.fetch_last_report(app.config))
     except UserError as e:
@@ -56,6 +55,14 @@ def post_pgbadger_reports_new(http_context, app):
     except UserError as e:
         return json.dumps(error())
 
+# GET  /pgbadger/v0/reports/<timestamp>  : get report by date (in json)        
+@routes_v0.get(b'/pgbadger/v0/reports/<int:timestamp>')
+def get_pgbadger_report_timestamp(http_context, app):
+    try:
+        return json.dumps(pgbadger.fetch_report(app.config,timestamp))
+    except UserError as e:
+        return json.dumps(error())
+
 # GET /pgbadger/v0/version' : show local pgBadger version
 @routes_v0.get(b'/pgbadger/v0/version')
 def get_pgbadger_version(http_context, app):
@@ -64,6 +71,13 @@ def get_pgbadger_version(http_context, app):
     except UserError as e:
         return json.dumps(error())
 
+# DEL  /pgbadger/v0/reports/<timestamp> : remove a report by date 
+@routes_v0.delete(b'/pgbadger/v0/reports/<int:timestamp>')
+def delete_pgbadger_report_timestamp(http_context, app):
+    try:
+        return json.dumps(pgbadger.delete_report(app.config,timestamp))
+    except UserError as e:
+        return json.dumps(error())
 
 def error():
     response={}

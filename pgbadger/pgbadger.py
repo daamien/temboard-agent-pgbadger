@@ -89,6 +89,19 @@ def create_report(config):
 
     return metadata	
 
+def delete_report(config,timestamp):
+    """
+    Remove a report, identified by its timestamp 
+    """
+    report_file=json_report_filepath(config,timestamp)
+    try:
+        os.remove(report_file)
+    except:
+        msg = "Internal Error."
+        logger.error("Can't remove report %s"% report_file)
+        raise UserError(msg)
+    return {'result':'Report Removed Succesfully'}
+
 
 def fetch_last_report(config):
     """
@@ -97,26 +110,65 @@ def fetch_last_report(config):
     reports=list_reports(config)
     last=max(reports.keys())
     # copy metadata
-    return insert_json(config,reports[last])
+    return append_json_report(config,reports[last])
 
-def insert_json(config,report):
-    # Add the JSON content
+def append_json_report(config,report):
+    """
+    TODO
+    Add the JSON content
+    """
+    json_file=json_report_filepath(config,report['timestamp'])
     try:
-	f= open(json_report_filepath(config,report['timestamp']),'r')
+	f= open(json_file,'r')
 	report['json']=f.read()
     except:
 	msg = "Internal Error."
-	logger.error("Can't open file : %s" % (msg,command,stderr))
+	logger.error("Can't open file : %s" % json_file)
         raise UserError(msg)
 
     return report	
 
 def fetch_report(config, timestamp):
     """
+    TODO 
     """
     reports=list_reports(config)
-    return insert_json(config,reports[timestamp])
+    
+    if not timestamp in reports.keys():
+        msg = "Can't find report for timestamp %d" % timestamp
+        logger.error(msg)
+        raise UserError(msg)
 
+    return append_json_report(config,reports[timestamp])
+
+
+def fetch_report_html(config, timestamp):
+    """
+    TODO
+    """
+    html_file=html_report_filepath(config,timestamp)
+ 
+    # if the report does not exist let's build it from the JSON data
+    if not os.path.isfile(html_file):
+        # Generate the HTML report from the JSON version
+        output_args=['-f','json',json_report_filepath(config,timestamp)]
+        input_args=['-o',html_file]
+        command=['perl', pgbadger_bin(config)] + output_args + input_args
+        # This operation should be very quick
+        (return_code, stdout, stderr) = exec_command(command)
+        if return_code!=0:
+            msg = "pgBadger failed."
+            logger.error("%s during command %s with error %s"% (msg,command,stderr))
+            raise UserError(msg)
+    try:
+        f= open(html_file,'r')
+        html_content=f.read()
+    except:
+        msg = "Internal Error."
+        logger.error("Can't open file : %s" % html_file )
+        raise UserError(msg)
+
+    return html_content
 
 def list_reports(config):
     """
@@ -157,11 +209,22 @@ def list_reports(config):
 
 def json_report_filepath(config,timestamp):
     """
+    TODO
     """	 
     # filename format is supposed to be like that: 
     # 1525794324_pgbadger_report_05may2018.json
     created_at=datetime.fromtimestamp(timestamp).strftime('%d%b%Y')
     report_filename=str(timestamp)+'_pgbadger_report_'+created_at+'.json'
+    return os.path.join(reports_directory(config),report_filename)
+
+def html_report_filepath(config,timestamp):
+    """
+    TODO
+    """
+    # the HTML report filename format is supposed to be like that: 
+    # 1525794324_pgbadger_report_05may2018.html
+    created_at=datetime.fromtimestamp(timestamp).strftime('%d%b%Y')
+    report_filename=str(timestamp)+'_pgbadger_report_'+created_at+'.html'
     return os.path.join(reports_directory(config),report_filename)
 
 def pgbadger_bin(config):
