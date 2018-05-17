@@ -112,10 +112,19 @@ def fetch_last_report(config):
     # copy metadata
     return append_json_report(config,reports[last])
 
+def fetch_last_report_html(config):
+    """
+    Return the last available HTML report 
+    """
+    reports=list_reports(config)
+    last=max(reports.keys())
+    # copy metadata
+    return fetch_report_html(config,last)
+
+
 def append_json_report(config,report):
     """
-    TODO
-    Add the JSON content
+    Add the JSON content of the report in the current report object
     """
     json_file=json_report_filepath(config,report['timestamp'])
     try:

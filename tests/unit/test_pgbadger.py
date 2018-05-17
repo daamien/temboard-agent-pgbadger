@@ -116,6 +116,19 @@ def test_fetch_last_report():
     assert('user_info' in report_json)
     #print(report)
 
+
+def test_fetch_last_report_html():
+
+    # Bad config 
+    with pytest.raises(UserError):
+        assert(pgbadger.fetch_last_report_html(empty_config))
+
+    # Good config
+    report=pgbadger.fetch_last_report_html(test_config)
+    assert('<html lang="en">' in report)
+    #print(report)
+
+
 def test_list_reports():
 
     # should not work on a test environment

@@ -26,10 +26,7 @@ workers = taskmanager.WorkerSet()
 routes_v0 = RouteSet()
 
 # TODO
-# GET  /pgbadger/v0/reports/<timestamp>  : get report by date (in json)
 # GET  /pgbadger/v0/reports/last.html  : get last report (in specified format)
-# GET  /pgbadger/v0/reports/<int:timestamp>.html  : get report by date (in html)
-# DEL  /pgbadger/v0/reports/<timestamp> : remove a report by date 
 
 # GET  /pgbadger/v0/reports  : list all reports
 @routes_v0.get(b'/pgbadger/v0/reports')
@@ -47,6 +44,14 @@ def get_pgbadger_report_last(http_context, app):
     except UserError as e:
         return json.dumps(error())
 
+# GET  /pgbadger/v0/reports/last.html  : get last report (in html)
+@routes_v0.get(b'/pgbadger/v0/reports/last.html')
+def get_pgbadger_report_last(http_context, app):
+    try:
+        return json.dumps(pgbadger.fetch_last_report_html(app.config))
+    except UserError as e:
+        return json.dumps(error())
+
 # POST /pgbadger/v0/reports/new  : create a report
 @routes_v0.post(b'/pgbadger/v0/reports/new')
 def post_pgbadger_reports_new(http_context, app):
@@ -60,6 +65,14 @@ def post_pgbadger_reports_new(http_context, app):
 def get_pgbadger_report_timestamp(http_context, app):
     try:
         return json.dumps(pgbadger.fetch_report(app.config,timestamp))
+    except UserError as e:
+        return json.dumps(error())
+
+# GET  /pgbadger/v0/reports/<timestamp>.html  : get report by date (in json)        
+@routes_v0.get(b'/pgbadger/v0/reports/<int:timestamp>.html')
+def get_pgbadger_report_timestamp_html(http_context, app):
+    try:
+        return json.dumps(pgbadger.fetch_report_html(app.config,timestamp))
     except UserError as e:
         return json.dumps(error())
 
