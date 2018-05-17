@@ -42,6 +42,11 @@ def test_check_version():
     with pytest.raises(UserError):
         assert(pgbadger.check_version(version_config))
 
+    # non exitent path
+    version_config['pgbadger_path']='/cnjcnvnsjdvnkdnvkdjvnksndvs/'
+    with pytest.raises(UserError):
+        assert(pgbadger.check_version(version_config))
+
     # not installed 
     with pytest.raises(UserError):
         assert(pgbadger.check_version(empty_config))
@@ -51,6 +56,12 @@ def test_create_report():
     # should not work on a test environment
     with pytest.raises(UserError):
         assert(pgbadger.create_report(empty_config))	
+
+    # 
+    test_config_no_logs={}
+    test_config_no_logs['reports_directory']='_tmp/reports'	
+    with pytest.raises(UserError):
+	assert(pgbadger.create_report(test_config_no_logs))	
 
     assert(pgbadger.create_report(test_config))
 
@@ -135,6 +146,11 @@ def test_list_reports():
     with pytest.raises(UserError):
         assert(pgbadger.list_reports({}))
 
+    config={}
+    config['reports_directory']='/vnsfvnskjdnvskdnvksvn'
+    with pytest.raises(UserError):
+        pgbadger.list_reports(config)
+    
     config={}
     config['reports_directory']='_tmp/reports'
     assert(pgbadger.list_reports(config))
