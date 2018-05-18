@@ -1,12 +1,36 @@
 
 from temboardagent.errors import UserError
 from temboardagent.cli import Application
+from temboardagent.scheduler import taskmanager
+from temboardagent.scripts.agent import WorkerPoolService
+from temboardagent.scripts.agent import SchedulerService
+from temboardagent.configuration import MergedConfiguration
+from temboardagent.routing import Router
+
 import pgbadger
 
 import pytest
 
 empty_app = Application()
-empty_app.config = {}
+
+
+empty_app.config = MergedConfiguration()
+
+task_queue = taskmanager.Queue()
+event_queue = taskmanager.Queue()
+
+empty_app.worker_pool = WorkerPoolService(
+                    app=empty_app, 
+                    name=u'worker pool',
+                    task_queue=task_queue, 
+                    event_queue=event_queue
+                )
+empty_app.scheduler = SchedulerService( 
+                    app=empty_app,
+                    name=u'worker pool',
+                    task_queue=task_queue,event_queue=event_queue)
+
+empty_app.router = Router()
 
 def test_get_pgbadger_reports():
 
@@ -63,10 +87,8 @@ def test_create_report():
 def test_class_init():
 
     from temboardagent.routing import Router
-    app = Application()
-    app.router = Router()
  
-    p=pgbadger.pgbadgerplugin(app)
+    p=pgbadger.pgbadgerplugin(empty_app)
     
     assert(p.load() is None)
 

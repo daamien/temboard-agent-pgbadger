@@ -146,10 +146,10 @@ class pgbadgerplugin(object):
         self.app.router.add(routes_v0)
 
         self.app.worker_pool.add(workers)
-        self.app.scheduler.add(workers)
+        #self.app.scheduler.add(workers)
 
     def unload(self):
-        self.app.scheduler.remove(workers)
+        #self.app.scheduler.remove(workers)
         self.app.worker_pool.remove(workers)
         self.app.router.remove(routes_v0)
         self.app.config.remove_specs(self.option_specs)
