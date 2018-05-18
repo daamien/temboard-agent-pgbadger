@@ -7,7 +7,7 @@ import json
 
 from temboardagent.errors import UserError
 from temboardagent.routing import RouteSet
-from temboardagent.scheduler import taskmanager
+from temboardagent.scheduler.taskmanager import WorkerSet
 from temboardagent.configuration import OptionSpec
 from temboardagent.validators import dir_
 
@@ -16,7 +16,19 @@ from . import pgbadger
 
 logger = logging.getLogger(__name__)
 
-workers = taskmanager.WorkerSet()
+#
+# Background tasks
+# Generating a report can take a few minutes when processing very large log files
+# We're using schedule task to launch report generation
+#
+workers = WorkerSet()
+
+@workers.register(pool_size=1)
+
+@workers.schedule(id='monprojet_toto', redo_interval=5)
+def worker_toto(app):
+    logger.info("hello")
+
 
 #
 # API Version 0
@@ -133,13 +145,12 @@ class pgbadgerplugin(object):
         logger.info('Adding pgBadger routes')
         self.app.router.add(routes_v0)
 
-#        self.app.worker_pool.add(workers)
-#        self.app.scheduler.add(workers)
-
+        self.app.worker_pool.add(workers)
+        #self.app.scheduler.add(workers)
 
     def unload(self):
-#        self.app.scheduler.remove(workers)
-#        self.app.worker_pool.remove(workers)
+        #self.app.scheduler.remove(workers)
+        self.app.worker_pool.remove(workers)
         self.app.router.remove(routes_v0)
         self.app.config.remove_specs(self.option_specs)
 
